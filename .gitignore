@@ -1,0 +1,35 @@
+# Large / generated files
+data/
+models/
+results/
+logs/
+*.parquet
+*.gguf
+*.pkl
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+*.dylib
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets
+.env
+*.pem
