@@ -46,12 +46,27 @@ def run_exp03(config: dict | None = None) -> pd.DataFrame:
     X = low_risk[available_features].copy()
     y = low_risk["FIB4_FALSE_NEGATIVE"].astype(int)
 
-    # Report high-missingness features (> 20%)
+    # LBXTR (triglycerides, fasting-only) — fill from LBXSTR (non-fasting, from BIOPRO) if available
+    if "LBXTR" in X.columns and "LBXSTR" in low_risk.columns:
+        lbxstr = low_risk["LBXSTR"].reindex(X.index)
+        missing_tr = X["LBXTR"].isna()
+        X.loc[missing_tr, "LBXTR"] = lbxstr[missing_tr]
+        filled_n = missing_tr.sum() - X["LBXTR"].isna().sum()
+        print(f"LBXTR: filled {filled_n:,} values from LBXSTR fallback")
+
+    # Report high-missingness features (> 30%)
     miss_pct = X.isnull().mean() * 100
-    high_miss = miss_pct[miss_pct > 20]
+    high_miss = miss_pct[miss_pct > 30]
     if len(high_miss) > 0:
-        print(f"High missingness (>20%) features:\n{high_miss.round(1)}")
+        print(f"High missingness (>30%) features:\n{high_miss.round(1)}")
         (results_dir / "high_missingness_features.txt").write_text(high_miss.to_string())
+
+    # If LBXTR still > 20% missing after fallback, drop TYG and LOG_TYG
+    if "LBXTR" in X.columns and X["LBXTR"].isna().mean() > 0.20:
+        print("WARNING: LBXTR still >20% missing after LBXSTR fallback — dropping TYG and LOG_TYG")
+        for col_drop in ["TYG", "LOG_TYG"]:
+            if col_drop in X.columns:
+                X = X.drop(columns=[col_drop])
 
     # Step 1: Median imputation
     medians = X.median()

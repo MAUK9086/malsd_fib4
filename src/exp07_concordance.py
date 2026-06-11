@@ -12,6 +12,19 @@ import yaml
 from src.utils.llm_utils import extract_biomarkers_from_text, validate_llm_response
 from src.utils.plot_utils import plot_concordance_heatmap
 
+# Maps composite score feature names to their component biomarker canonical names.
+# A composite feature is counted as "mentioned" if ANY of its components appear
+# in the LLM response text — the LLM correctly names components, not the score.
+COMPOSITE_SCORE_COMPONENTS: dict[str, set[str]] = {
+    "HSI":      {"alt", "ast", "bmi", "glucose", "haemoglobin"},
+    "NFS":      {"age", "bmi", "glucose", "ast", "alt", "platelets", "albumin"},
+    "APRI":     {"ast", "platelets"},
+    "DE_RITIS": {"ast", "alt"},
+    "TYG":      {"triglycerides", "glucose"},
+    "SII":      {"platelets", "wbc"},
+    "WHTR":     {"waist"},
+}
+
 
 def load_config(path: str = "config/config.yaml") -> dict:
     with open(path) as f:
@@ -43,26 +56,40 @@ def load_shap_top5_per_cluster(results_dir_04: Path, results_dir_05: Path) -> di
 
 
 def compute_concordance(llm_text: str, shap_top5: list[str]) -> float:
-    """Fraction of SHAP top-5 features mentioned in LLM response."""
+    """
+    Fraction of SHAP top-5 features 'covered' by the LLM response.
+
+    For composite scores (HSI, NFS, APRI, etc.), the feature is counted as
+    covered if ANY of its component biomarkers appear in the LLM text —
+    the LLM correctly names components rather than the composite formula name.
+    """
     mentioned = extract_biomarkers_from_text(llm_text)
-    # Map SHAP feature names to canonical biomarker names
-    shap_canonical = set()
+
     feature_to_canonical = {
         "LBXSATSI": "alt", "LBXSASSI": "ast", "LBXSGTSI": "ggt",
         "LBXPLTSI": "platelets", "LBXSAL": "albumin", "LBXGH": "hba1c",
         "BMXBMI": "bmi", "BMXWAIST": "waist", "LBXTR": "triglycerides",
         "LBDHDD": "hdl", "LBXSGL": "glucose", "LBXHGB": "haemoglobin",
         "LBXWBCSI": "wbc", "LBXSCR": "creatinine", "RIDAGEYR": "age",
+        "LBXMCVSI": "mcv", "LBXRDW": "rdw",
         "NFS": "nfs", "APRI": "apri", "DE_RITIS": "ast",
     }
-    for feat in shap_top5:
-        canonical = feature_to_canonical.get(feat, feat.lower())
-        shap_canonical.add(canonical)
 
-    if not shap_canonical:
+    if not shap_top5:
         return 0.0
-    overlap = mentioned & shap_canonical
-    return len(overlap) / len(shap_canonical)
+
+    matched = 0
+    for feat in shap_top5:
+        if feat in COMPOSITE_SCORE_COMPONENTS:
+            # Composite: count as match if ANY component is mentioned
+            if mentioned & COMPOSITE_SCORE_COMPONENTS[feat]:
+                matched += 1
+        else:
+            canonical = feature_to_canonical.get(feat, feat.lower())
+            if canonical in mentioned:
+                matched += 1
+
+    return matched / len(shap_top5)
 
 
 def compute_semantic_similarity(text_a: str, text_b: str, model) -> float:

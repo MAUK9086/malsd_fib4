@@ -1,4 +1,12 @@
-"""EXP-09: FIB-4 Plus — augmented triage rule using top SHAP features (H4)."""
+"""EXP-09: FIB-4 Plus — augmented triage rule using top SHAP features (H4).
+
+Baselines:
+  - NFS within low-risk stratum (clinical next-step recommendation)
+  - BMI only (simple anthropometric proxy)
+  - FIB-4 on FULL MASLD cohort (reference — shows overall performance separately)
+NOTE: FIB-4 within the low-risk stratum (FIB-4 < 1.30) has AUROC ≈ 0.50 by
+construction and is NOT a valid comparison. The NFS is the correct comparison.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +16,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
+from scipy.stats import spearmanr
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -103,29 +112,68 @@ def run_exp09(config: dict | None = None) -> None:
 
     p_plus = lr.predict_proba(X_test_s)[:, 1]
 
-    # FIB-4 alone on same test set
-    fib4_idx = available.index("FIB4") if "FIB4" in available else None
-    if fib4_idx is not None:
-        p_fib4 = X_test["FIB4"].values
-    else:
-        p_fib4 = np.full(len(X_test), 0.5)
-
     n_boot = config["bootstrap"]["n_iterations"]
+    lsm_thresh = config["thresholds"]["lsm_significant_fibrosis"]
+
+    # --- Correct baselines ---
+    # Baseline 1: NFS within the same low-risk test stratum
+    nfs_test = feature_df.loc[X_test.index, "NFS"].fillna(
+        feature_df["NFS"].median()
+    ).values if "NFS" in feature_df.columns else np.full(len(X_test), 0.0)
+
+    # Baseline 2: BMI only
+    bmi_test = feature_df.loc[X_test.index, "BMXBMI"].fillna(
+        feature_df["BMXBMI"].median()
+    ).values if "BMXBMI" in feature_df.columns else np.full(len(X_test), 0.0)
+
+    # Baseline 3: FIB-4 on FULL MASLD cohort (not stratum — for reference context only)
+    cohort_full = pd.read_parquet(data_dir / "nhanes_masld_cohort.parquet")
+    y_full = (cohort_full["LUXSMED"] >= lsm_thresh).astype(int)
+    fib4_full_valid = cohort_full.dropna(subset=["FIB4", "LUXSMED"])
+    roc_fib4_full = compute_auroc_ci(
+        (fib4_full_valid["LUXSMED"] >= lsm_thresh).astype(int).values,
+        fib4_full_valid["FIB4"].values,
+        n_iter=200,
+    )
+
+    # Spearman r of FIB-4 vs LSM within the low-risk stratum (informational)
+    if "FIB4" in feature_df.columns:
+        fib4_lr = feature_df.loc[X_all.index, "FIB4"].fillna(0)
+        lsm_lr = cohort_full.set_index("SEQN").reindex(
+            feature_df.loc[X_all.index, "SEQN"] if "SEQN" in feature_df.columns else pd.Index([])
+        )["LUXSMED"] if "SEQN" in feature_df.columns else pd.Series(dtype=float)
+        if len(lsm_lr) == len(fib4_lr):
+            rho, p_rho = spearmanr(fib4_lr.values, lsm_lr.fillna(0).values)
+            print(f"FIB-4 vs LSM Spearman within low-risk stratum: r={rho:.3f}, p={p_rho:.4f}")
+
     roc_plus = compute_auroc_ci(y_test.values, p_plus, n_iter=n_boot)
-    roc_fib4 = compute_auroc_ci(y_test.values, p_fib4, n_iter=n_boot)
+    roc_nfs = compute_auroc_ci(y_test.values, nfs_test, n_iter=n_boot)
+    roc_bmi = compute_auroc_ci(y_test.values, bmi_test, n_iter=n_boot)
 
-    print(f"FIB-4 AUROC: {roc_fib4['auroc']:.4f} (95% CI: {roc_fib4['ci_lo']:.3f}–{roc_fib4['ci_hi']:.3f})")
-    print(f"FIB-4 Plus AUROC: {roc_plus['auroc']:.4f} (95% CI: {roc_plus['ci_lo']:.3f}–{roc_plus['ci_hi']:.3f})")
+    print(f"NFS AUROC (baseline): {roc_nfs['auroc']:.4f} (95% CI: {roc_nfs['ci_lo']:.3f}–{roc_nfs['ci_hi']:.3f})")
+    print(f"BMI-only AUROC:       {roc_bmi['auroc']:.4f} (95% CI: {roc_bmi['ci_lo']:.3f}–{roc_bmi['ci_hi']:.3f})")
+    print(f"FIB-4 Plus AUROC:     {roc_plus['auroc']:.4f} (95% CI: {roc_plus['ci_lo']:.3f}–{roc_plus['ci_hi']:.3f})")
+    print(f"FIB-4 (full cohort):  {roc_fib4_full['auroc']:.4f} [reference only, different denominator]")
 
-    # DeLong's test
-    z, p_val = delong_test(y_test.values, p_plus, p_fib4)
-    print(f"DeLong's test: z={z:.3f}, p={p_val:.4f}")
+    # DeLong's test: FIB-4 Plus vs NFS (the correct primary comparison)
+    z, p_val = delong_test(y_test.values, p_plus, nfs_test)
+    print(f"DeLong's test (FIB-4 Plus vs NFS): z={z:.3f}, p={p_val:.4f}")
 
     auroc_df = pd.DataFrame([
-        {"model": "FIB-4", "auroc": roc_fib4["auroc"], "ci_lo": roc_fib4["ci_lo"], "ci_hi": roc_fib4["ci_hi"]},
+        {"model": "NFS (low-risk stratum)",
+         "auroc": roc_nfs["auroc"], "ci_lo": roc_nfs["ci_lo"], "ci_hi": roc_nfs["ci_hi"],
+         "note": "primary comparison — clinical next-step"},
+        {"model": "BMI only (low-risk stratum)",
+         "auroc": roc_bmi["auroc"], "ci_lo": roc_bmi["ci_lo"], "ci_hi": roc_bmi["ci_hi"],
+         "note": "simple anthropometric baseline"},
         {"model": f"FIB-4 Plus ({'+'.join(top_labels)})",
          "auroc": roc_plus["auroc"], "ci_lo": roc_plus["ci_lo"], "ci_hi": roc_plus["ci_hi"],
-         "delong_z": z, "delong_p": p_val},
+         "delong_z_vs_nfs": z, "delong_p_vs_nfs": p_val,
+         "note": "primary model"},
+        {"model": "FIB-4 (full MASLD cohort, reference only)",
+         "auroc": roc_fib4_full["auroc"],
+         "ci_lo": roc_fib4_full["ci_lo"], "ci_hi": roc_fib4_full["ci_hi"],
+         "note": "different denominator — all FIB-4 ranges, not comparable directly"},
     ])
     auroc_df.to_csv(results_dir / "fib4plus_vs_fib4_auroc.csv", index=False)
 
@@ -135,33 +183,36 @@ def run_exp09(config: dict | None = None) -> None:
         f"FIB-4 Plus optimal cutoff (Youden's index): {cutoff:.4f}\n"
         f"Features: FIB-4 + {', '.join(top_features)}\n"
         f"Logistic regression, standardised inputs\n"
+        f"Primary baseline comparison: NFS (DeLong z={z:.3f}, p={p_val:.4f})\n"
     )
     print(f"FIB-4 Plus optimal cutoff: {cutoff:.4f}")
 
-    # Reclassification table (NRI/IDI)
-    p_fib4_norm = (p_fib4 - p_fib4.min()) / (p_fib4.max() - p_fib4.min() + 1e-10)
-    nri_idi = compute_nri_idi(y_test.values, p_fib4_norm, p_plus, cutoff=cutoff)
+    # Reclassification table (NRI/IDI) vs NFS baseline
+    nfs_norm = (nfs_test - nfs_test.min()) / (nfs_test.max() - nfs_test.min() + 1e-10)
+    nri_idi = compute_nri_idi(y_test.values, nfs_norm, p_plus, cutoff=cutoff)
     pd.DataFrame([nri_idi]).to_csv(results_dir / "reclassification_table.csv", index=False)
-    print(f"NRI: {nri_idi['nri']:.3f}, IDI: {nri_idi['idi']:.3f}")
+    print(f"NRI vs NFS: {nri_idi['nri']:.3f}, IDI: {nri_idi['idi']:.3f}")
 
-    # ROC comparison plot
+    # ROC comparison plot (3 curves)
     plot_roc_curves(
         [
-            {"label": "FIB-4", "auroc": roc_fib4["auroc"],
-             "fpr": roc_fib4["fpr"], "tpr": roc_fib4["tpr"]},
-            {"label": f"FIB-4 Plus", "auroc": roc_plus["auroc"],
-             "fpr": roc_plus["fpr"], "tpr": roc_plus["tpr"]},
+            {"label": "NFS (baseline)",
+             "auroc": roc_nfs["auroc"], "fpr": roc_nfs["fpr"], "tpr": roc_nfs["tpr"]},
+            {"label": "BMI only",
+             "auroc": roc_bmi["auroc"], "fpr": roc_bmi["fpr"], "tpr": roc_bmi["tpr"]},
+            {"label": "FIB-4 Plus",
+             "auroc": roc_plus["auroc"], "fpr": roc_plus["fpr"], "tpr": roc_plus["tpr"]},
         ],
         output_path=results_dir / "fib4plus_roc.png",
-        title="FIB-4 Plus vs FIB-4 — ROC Comparison",
+        title="FIB-4 Plus vs Baselines — ROC Comparison (within FIB-4 low-risk stratum)",
     )
 
     # Decision curve analysis
     plot_decision_curve(
         y_test.values,
-        {"FIB-4": p_fib4_norm, "FIB-4 Plus": p_plus},
+        {"NFS": nfs_norm, "FIB-4 Plus": p_plus},
         output_path=results_dir / "decision_curve_analysis.png",
-        title="Decision Curve Analysis — FIB-4 Plus vs FIB-4",
+        title="Decision Curve Analysis — FIB-4 Plus vs NFS",
     )
 
     # Save model

@@ -150,8 +150,47 @@ def fill_apasl_prompt(cluster: dict) -> tuple[str, str]:
     return SYSTEM_APASL, USER_APASL.format(**cluster)
 
 
+# ---------------------------------------------------------------------------
+# PROMPT_DIFFERENTIATION — Force unique, differentiated cluster names
+# ---------------------------------------------------------------------------
+
+SYSTEM_DIFFERENTIATION = """\
+You are naming distinct patient clusters. Each cluster name MUST be UNIQUE
+and capture what makes THAT cluster different from the others in the table.
+Use only the data provided. Do not invent clinical details.\
+"""
+
+USER_DIFFERENTIATION = """\
+You are naming {n_clusters} patient clusters of FIB-4 false negatives (patients
+FIB-4 classified as low risk but who have elevated liver stiffness ≥ 8 kPa).
+Each cluster represents a distinct metabolic phenotype.
+
+CLUSTER COMPARISON TABLE (median values):
+{cluster_table}
+
+TASK:
+For each cluster, provide a unique clinical name (3–5 words) that captures
+the KEY distinguishing feature of THAT cluster vs the others.
+Names must differ — do not use the same primary descriptor for two clusters.
+
+RESPONSE FORMAT (strict JSON, one entry per cluster):
+{{
+  "cluster_names": [
+    {{"cluster_id": 0, "name": "...", "key_difference": "1 sentence"}},
+    {{"cluster_id": 1, "name": "...", "key_difference": "1 sentence"}}
+  ]
+}}\
+"""
+
+
+def fill_differentiation_prompt(ctx: dict) -> tuple[str, str]:
+    """Returns (system_prompt, user_prompt) for DIFFERENTIATION task."""
+    return SYSTEM_DIFFERENTIATION, USER_DIFFERENTIATION.format(**ctx)
+
+
 PROMPT_REGISTRY = {
     "PHENOTYPE": fill_phenotype_prompt,
     "MECHANISM": fill_mechanism_prompt,
     "APASL_RELEVANCE": fill_apasl_prompt,
+    "DIFFERENTIATION": fill_differentiation_prompt,
 }

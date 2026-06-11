@@ -46,8 +46,9 @@ def apply_masld_eligibility(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     # Fasting glucose ≥ 100 OR diagnosed diabetes
     cm_glucose = (df["LBXSGL"] >= t["fasting_glucose_cutoff"]) | (df["DIQ010"] == 1)
 
-    # BP ≥ 130/85
-    cm_bp = (df["BPXOSY1"] >= t["systolic_bp_cutoff"]) | (df["BPXODI1"] >= t["diastolic_bp_cutoff"])
+    # BP ≥ 130/85 OR on antihypertensive medication (BPQ040A == 1)
+    has_htn_meds = df.get("BPQ040A", pd.Series(2, index=df.index)) == 1
+    cm_bp = (df["BPXOSY1"] >= t["systolic_bp_cutoff"]) | (df["BPXODI1"] >= t["diastolic_bp_cutoff"]) | has_htn_meds
 
     # Triglycerides ≥ 150
     cm_trig = df["LBXTR"] >= t["triglycerides_cutoff"]

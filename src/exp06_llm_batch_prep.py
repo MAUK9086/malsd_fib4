@@ -20,18 +20,26 @@ def load_config(path: str = "config/config.yaml") -> dict:
 
 def build_cluster_context(
     profile_row: pd.Series,
-    cohort_subset: pd.DataFrame,
+    fn_full: pd.DataFrame,
     cluster_id: int,
 ) -> dict:
-    """Build the template variables dict for a single cluster."""
-    grp = cohort_subset[cohort_subset["cluster"] == cluster_id]
+    """
+    Build the template variables dict for a single cluster.
+
+    profile_row: row from cluster_profiles.csv (lab medians from feature_df)
+    fn_full: full cohort false-negative rows with cluster assignments,
+             includes FIB4, LUXSMED, RIAGENDR, DIQ010, RIDRETH3
+    """
+    grp = fn_full[fn_full["cluster"] == cluster_id]
     n = len(grp)
 
-    # Female percentage
-    pct_female = (grp.get("RIAGENDR", pd.Series([])) == 2).mean() * 100 if "RIAGENDR" in grp.columns else float("nan")
+    # Demographics — derived directly from full cohort group
+    pct_female = (grp["RIAGENDR"] == 2).mean() * 100 if "RIAGENDR" in grp.columns else float("nan")
+    pct_dm = (grp["DIQ010"] == 1).mean() * 100 if "DIQ010" in grp.columns else float("nan")
 
-    # Diabetes percentage
-    pct_dm = (grp.get("DIQ010", pd.Series([])) == 1).mean() * 100 if "DIQ010" in grp.columns else float("nan")
+    # FIB-4 and LSM from full cohort (not from profile_row which may lack these)
+    fib4_median = grp["FIB4"].median() if "FIB4" in grp.columns else float("nan")
+    lsm_median = grp["LUXSMED"].median() if "LUXSMED" in grp.columns else float("nan")
 
     # Race/ethnicity distribution
     if "RIDRETH3" in grp.columns:
@@ -44,16 +52,23 @@ def build_cluster_context(
     else:
         race_dist = "Not available"
 
+    # Lab values from profile_row (cluster_profiles.csv medians from feature_df)
     def safe_get(col: str, default: str = "N/A") -> str:
+        # Try profile_row first, then compute from grp
         val = profile_row.get(f"{col}_median", np.nan)
+        if pd.isna(val) and col in grp.columns:
+            val = grp[col].median()
         if pd.isna(val):
             return default
         return f"{val:.1f}"
 
+    def fmt(val: float, default: str = "N/A") -> str:
+        return f"{val:.1f}" if not (val is None or np.isnan(val)) else default
+
     return {
         "n_patients": n,
         "age": safe_get("RIDAGEYR"),
-        "pct_female": f"{pct_female:.0f}" if not np.isnan(pct_female) else "N/A",
+        "pct_female": fmt(pct_female),
         "bmi": safe_get("BMXBMI"),
         "waist": safe_get("BMXWAIST"),
         "alt": safe_get("LBXSATSI"),
@@ -65,23 +80,32 @@ def build_cluster_context(
         "hdl": safe_get("LBDHDD"),
         "alb": safe_get("LBXSAL"),
         "hgb": safe_get("LBXHGB"),
-        "fib4": safe_get("FIB4"),
-        "lsm": safe_get("LUXSMED"),
-        "pct_dm": f"{pct_dm:.0f}" if not np.isnan(pct_dm) else "N/A",
+        "fib4": fmt(fib4_median),
+        "lsm": fmt(lsm_median),
+        "pct_dm": fmt(pct_dm),
         "race_dist": race_dist,
     }
 
 
-def prepare_batch(config: dict | None = None) -> None:
+def prepare_batch(
+    config: dict | None = None,
+    output_dir: str | None = None,
+    experiment_label: str = "EXP-06",
+) -> str:
+    """
+    Prepare LLM batch JSON. Returns path to batch file.
+
+    output_dir: override results/exp06 with a different directory (e.g. results/exp15)
+    """
     if config is None:
         config = load_config()
 
     data_dir = Path(config["paths"]["data_processed"])
     results_dir_05 = Path(config["paths"]["results"]) / "exp05"
-    results_dir_06 = Path(config["paths"]["results"]) / "exp06"
-    results_dir_06.mkdir(parents=True, exist_ok=True)
+    results_dir_out = Path(output_dir) if output_dir else Path(config["paths"]["results"]) / "exp06"
+    results_dir_out.mkdir(parents=True, exist_ok=True)
 
-    # Load cluster profiles
+    # Load cluster profiles (from EXP-05 — always read from exp05)
     profiles_path = results_dir_05 / "cluster_profiles.csv"
     if not profiles_path.exists():
         raise FileNotFoundError(f"Run exp05_clustering.py first: {profiles_path}")
@@ -90,18 +114,17 @@ def prepare_batch(config: dict | None = None) -> None:
     cluster_ids = sorted(profiles["cluster"].tolist())
     print(f"Found {len(cluster_ids)} clusters: {cluster_ids}")
 
-    # Load full cohort to compute per-cluster demographics
-    feature_df = pd.read_parquet(data_dir / "features_fib4_low_risk.parquet")
-    assign_df = pd.read_parquet(results_dir_05 / "cluster_assignments.parquet")
+    # Load FULL cohort (has FIB4, LUXSMED, RIAGENDR, DIQ010, RIDRETH3)
+    cohort = pd.read_parquet(data_dir / "nhanes_masld_cohort.parquet")
+    cohort_fn = cohort[(cohort["FIB4_CAT"] == 0) & (cohort["FIB4_FALSE_NEGATIVE"] == 1)].copy()
 
-    # Merge cluster assignments back to feature data
-    if "SEQN" in feature_df.columns and "SEQN" in assign_df.columns:
-        fn_df = feature_df[feature_df["FIB4_FALSE_NEGATIVE"] == 1].merge(
-            assign_df[["SEQN", "cluster"]], on="SEQN", how="left"
-        )
+    # Merge cluster assignments onto full cohort false negatives
+    assign_df = pd.read_parquet(results_dir_05 / "cluster_assignments.parquet")
+    if "SEQN" in cohort_fn.columns and "SEQN" in assign_df.columns:
+        fn_full = cohort_fn.merge(assign_df[["SEQN", "cluster"]], on="SEQN", how="left")
     else:
-        fn_df = feature_df[feature_df["FIB4_FALSE_NEGATIVE"] == 1].copy()
-        fn_df["cluster"] = assign_df["cluster"].values
+        fn_full = cohort_fn.copy()
+        fn_full["cluster"] = assign_df["cluster"].values
 
     models_config = [
         {"name": config["models"]["primary_name"], "path": config["models"]["primary_path"]},
@@ -113,7 +136,11 @@ def prepare_batch(config: dict | None = None) -> None:
 
     for cluster_id in cluster_ids:
         profile_row = profiles[profiles["cluster"] == cluster_id].iloc[0]
-        ctx = build_cluster_context(profile_row, fn_df, cluster_id)
+        ctx = build_cluster_context(profile_row, fn_full, cluster_id)
+
+        # Verify FIB-4 and LSM are populated
+        if ctx["fib4"] == "N/A" or ctx["lsm"] == "N/A":
+            print(f"  WARNING: cluster {cluster_id} missing FIB-4 ({ctx['fib4']}) or LSM ({ctx['lsm']})")
 
         for model_info in models_config:
             for prompt_type in prompt_types:
@@ -121,7 +148,7 @@ def prepare_batch(config: dict | None = None) -> None:
                 system_prompt, user_prompt = fill_fn(ctx)
 
                 batch.append({
-                    "experiment": "EXP-06",
+                    "experiment": experiment_label,
                     "system_prompt": system_prompt,
                     "user_prompt": user_prompt,
                     "metadata": {
@@ -130,17 +157,18 @@ def prepare_batch(config: dict | None = None) -> None:
                         "model_path": model_info["path"],
                         "prompt_type": prompt_type,
                         "n_patients": ctx["n_patients"],
+                        "fib4_check": ctx["fib4"],
+                        "lsm_check": ctx["lsm"],
                     },
                 })
 
-    batch_path = results_dir_06 / "llm_batch.json"
+    batch_path = results_dir_out / "llm_batch.json"
     with open(batch_path, "w") as f:
         json.dump(batch, f, indent=2)
 
     print(f"\nBatch prepared: {len(batch)} prompts → {batch_path}")
-    print(f"  Clusters: {len(cluster_ids)}")
-    print(f"  Models: {len(models_config)}")
-    print(f"  Prompt types: {len(prompt_types)}")
+    print(f"  Clusters: {len(cluster_ids)}, Models: {len(models_config)}, Prompt types: {len(prompt_types)}")
+    return str(batch_path)
 
 
 if __name__ == "__main__":

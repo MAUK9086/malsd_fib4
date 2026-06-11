@@ -21,6 +21,30 @@ from sklearn.cluster import HDBSCAN as hdbscan
 from src.utils.plot_utils import plot_umap_clusters, plot_radar_charts
 from src.utils.nhanes_codebook import MODEL_FEATURES
 
+# Raw, non-composite features used for FITTING (no double-counting).
+# Composite scores (HSI, NFS, APRI, TYG, LBXLDL) are excluded here
+# because they are linear functions of variables already in this list.
+# They are still used for CHARACTERISATION (reporting medians, KW tests).
+CLUSTERING_FEATURES = [
+    # FIB-4 native (raw only)
+    "RIDAGEYR", "LBXSASSI", "LBXSATSI", "LBXPLTSI",
+    # Extended biochemistry (raw)
+    "LBXSGTSI", "LBXSAL", "LBXSAPSI", "LBXSTB",
+    "LBXSCR", "LBXSBU", "LBXSGL", "LBXSUA",
+    # Metabolic (raw — LBXLDL excluded as correlated with LBXTC)
+    "LBXGH", "LBXTR", "LBDHDD", "LBXTC",
+    # Anthropometric (raw)
+    "BMXBMI", "BMXWAIST", "WHTR",
+    # Hematological (raw)
+    "LBXHGB", "LBXWBCSI", "LBXMCVSI", "LBXRDW", "LBXMPSI",
+    # Inflammatory (raw-ish, not simple functions of the above)
+    "SII", "DE_RITIS",
+]
+
+# Diagnostic variables always added to the cluster profile output
+# so LLM prompts receive FIB-4 score, LSM, sex, diabetes, race
+EXTRA_PROFILE_VARS = ["FIB4", "LUXSMED", "RIAGENDR", "DIQ010", "RIDRETH3"]
+
 
 def load_config(path: str = "config/config.yaml") -> dict:
     with open(path) as f:
@@ -123,8 +147,13 @@ def run_exp05(config: dict | None = None) -> pd.DataFrame:
     fn_df = feature_df[feature_df["FIB4_FALSE_NEGATIVE"] == 1].copy()
     print(f"EXP-05: False negative population N={len(fn_df):,}")
 
-    feat_cols = [c for c in MODEL_FEATURES if c in fn_df.columns]
-    X_raw = fn_df[feat_cols].fillna(fn_df[feat_cols].median())
+    # Two separate feature lists: clean set for FITTING, full set for CHARACTERISATION
+    feat_cols_cluster = [c for c in CLUSTERING_FEATURES if c in fn_df.columns]
+    feat_cols_all = [c for c in MODEL_FEATURES if c in fn_df.columns]
+    print(f"Clustering features (fitting): {len(feat_cols_cluster)}")
+    print(f"Characterisation features: {len(feat_cols_all)}")
+
+    X_raw = fn_df[feat_cols_cluster].fillna(fn_df[feat_cols_cluster].median())
 
     # Standardise for clustering
     scaler = StandardScaler()
@@ -194,11 +223,27 @@ def run_exp05(config: dict | None = None) -> pd.DataFrame:
     assign_df.to_parquet(results_dir / "cluster_assignments.parquet", index=False)
 
     # --- Phase D: Cluster characterisation ---
-    profiles = cluster_profile_stats(fn_df, feat_cols, cluster_col="cluster")
+    # Also merge in extra diagnostic variables (FIB4, LUXSMED, sex, DM, race)
+    # from the full cohort so LLM prompts have real values
+    cohort_path = Path(config["paths"]["data_processed"]) / "nhanes_masld_cohort.parquet"
+    if cohort_path.exists():
+        cohort = pd.read_parquet(cohort_path)
+        extra_cols = [c for c in EXTRA_PROFILE_VARS if c in cohort.columns]
+        if extra_cols and "SEQN" in fn_df.columns and "SEQN" in cohort.columns:
+            fn_df = fn_df.merge(cohort[["SEQN"] + extra_cols], on="SEQN", how="left", suffixes=("", "_cohort"))
+            # Use cohort values for any extra cols not already present
+            for col in extra_cols:
+                if col not in fn_df.columns or fn_df[col].isna().all():
+                    fn_df[col] = fn_df.get(f"{col}_cohort", np.nan)
+        print(f"Merged extra profile vars: {extra_cols}")
+
+    # Profile on all features + extras
+    all_profile_features = list(set(feat_cols_all + [c for c in EXTRA_PROFILE_VARS if c in fn_df.columns]))
+    profiles = cluster_profile_stats(fn_df, all_profile_features, cluster_col="cluster")
     profiles.to_csv(results_dir / "cluster_profiles.csv", index=False)
     print(f"\nCluster sizes: {fn_df['cluster'].value_counts().sort_index().to_dict()}")
 
-    kw_results = kruskal_tests(fn_df, feat_cols, cluster_col="cluster")
+    kw_results = kruskal_tests(fn_df, feat_cols_all, cluster_col="cluster")
     kw_results.to_csv(results_dir / "cluster_statistical_tests.csv", index=False)
     sig_features = kw_results[kw_results["bonferroni_p"] < 0.05]["feature"].tolist()
     print(f"Significantly different features (Bonferroni p<0.05): {len(sig_features)}")
@@ -209,8 +254,10 @@ def run_exp05(config: dict | None = None) -> pd.DataFrame:
         output_path=results_dir / "umap_clusters.png",
     )
 
-    # Radar charts (use top-8 most significant features for readability)
-    radar_features = sig_features[:8] if len(sig_features) >= 3 else feat_cols[:8]
+    # Radar charts (use top-8 most significant clustering features for readability)
+    radar_features = [f for f in sig_features if f in feat_cols_cluster][:8]
+    if len(radar_features) < 3:
+        radar_features = feat_cols_cluster[:8]
     median_profiles = profiles.set_index("cluster")[[f"{f}_median" for f in radar_features if f"{f}_median" in profiles.columns]]
     median_profiles.columns = [c.replace("_median", "") for c in median_profiles.columns]
 
