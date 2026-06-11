@@ -60,7 +60,9 @@ def run_exp15(config: dict | None = None) -> None:
 
     # Run LLM inference
     print("Running LLM batch (v2)...")
-    model_names = [config["models"]["primary_name"], config["models"]["secondary_name"]]
+    model_names = [config["models"]["primary_name"]]
+    if config["models"].get("use_secondary_model", True):
+        model_names.append(config["models"]["secondary_name"])
 
     for model_name in model_names:
         out_path = results_dir / f"llm_responses_{model_name}_v2.json"

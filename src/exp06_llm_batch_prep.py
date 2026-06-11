@@ -128,8 +128,11 @@ def prepare_batch(
 
     models_config = [
         {"name": config["models"]["primary_name"], "path": config["models"]["primary_path"]},
-        {"name": config["models"]["secondary_name"], "path": config["models"]["secondary_path"]},
     ]
+    if config["models"].get("use_secondary_model", True):
+        models_config.append(
+            {"name": config["models"]["secondary_name"], "path": config["models"]["secondary_path"]}
+        )
 
     batch = []
     prompt_types = list(PROMPT_REGISTRY.keys())

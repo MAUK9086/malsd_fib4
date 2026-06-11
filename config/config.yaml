@@ -50,6 +50,7 @@ models:
   primary_path: models/qwen2.5-32b-instruct-q4_k_m.gguf
   secondary_name: llama-3.1-70b
   secondary_path: models/Meta-Llama-3.1-70B-Instruct-Q4_K_M.gguf
+  use_secondary_model: false   # set true to also run Llama (slower, needs 70B weights)
   n_gpu_layers_32b: -1     # Full GPU for 32B
   n_gpu_layers_70b: 25     # Partial offload for 70B on 24 GB
   n_ctx: 4096
