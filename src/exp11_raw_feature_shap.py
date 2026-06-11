@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBClassifier
 
 from src.utils.stats_utils import compute_auroc_ci
-from src.utils.plot_utils import plot_shap_beeswarm, plot_shap_bar
+from src.utils.plot_utils import plot_shap_beeswarm, plot_shap_importance_bar
 
 
 def load_config(path: str = "config/config.yaml") -> dict:
@@ -172,7 +172,7 @@ def run_exp11(config: dict | None = None) -> None:
         output_path=results_dir / "shap_beeswarm_raw.png",
         title="SHAP Values — Raw Features Only (EXP-11)",
     )
-    plot_shap_bar(
+    plot_shap_importance_bar(
         shap_ranking,
         output_path=results_dir / "shap_bar_raw.png",
         title="Mean |SHAP| — Raw Features (EXP-11)",

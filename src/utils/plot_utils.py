@@ -119,6 +119,68 @@ def plot_shap_bar(
     _save(fig, output_path)
 
 
+def plot_shap_beeswarm(
+    shap_values: np.ndarray,
+    feature_data: np.ndarray,
+    feature_names: list[str],
+    output_path: str | Path,
+    title: str = "SHAP Beeswarm",
+    max_display: int = 20,
+) -> None:
+    """Beeswarm SHAP plot — wraps shap.summary_plot with dot style."""
+    import shap
+    import pandas as pd
+    df = pd.DataFrame(feature_data, columns=feature_names)
+    fig = plt.figure(figsize=(10, 8))
+    shap.summary_plot(shap_values, df, show=False, max_display=max_display, plot_type="dot")
+    plt.title(title)
+    _save(fig, output_path)
+
+
+def plot_shap_importance_bar(
+    ranking_df: pd.DataFrame,
+    output_path: str | Path,
+    title: str = "Mean |SHAP| Feature Importance",
+    top_n: int = 20,
+    label_col: str = "label",
+    value_col: str = "mean_abs_shap",
+) -> None:
+    """Horizontal bar chart from a pre-computed SHAP ranking DataFrame."""
+    df = ranking_df.head(top_n).copy()
+    fig, ax = plt.subplots(figsize=(8, max(4, top_n * 0.35)))
+    ax.barh(df[label_col][::-1], df[value_col][::-1], color=PALETTE[0], alpha=0.8)
+    ax.set_xlabel("Mean |SHAP value|")
+    ax.set_title(title)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    _save(fig, output_path)
+
+
+def plot_bar_chart(
+    df: pd.DataFrame,
+    x_col: str,
+    y_col: str,
+    output_path: str | Path,
+    title: str = "",
+    xlabel: str = "",
+    ylabel: str = "",
+    color: str | None = None,
+) -> None:
+    """Generic vertical bar chart from a DataFrame."""
+    fig, ax = plt.subplots(figsize=(7, 5))
+    colors = color or [PALETTE[i % len(PALETTE)] for i in range(len(df))]
+    bars = ax.bar(df[x_col].astype(str), df[y_col], color=colors, alpha=0.85, edgecolor="white")
+    ax.set_xlabel(xlabel or x_col)
+    ax.set_ylabel(ylabel or y_col)
+    ax.set_title(title)
+    ax.spines[["top", "right"]].set_visible(False)
+    for bar, val in zip(bars, df[y_col]):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01 * df[y_col].max(),
+                f"{val:.1f}", ha="center", va="bottom", fontsize=8)
+    fig.tight_layout()
+    _save(fig, output_path)
+
+
 # ---------------------------------------------------------------------------
 # UMAP scatter
 # ---------------------------------------------------------------------------
