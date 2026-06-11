@@ -1,0 +1,3 @@
+FIB-4 Plus optimal cutoff (Youden's index): 0.5377
+Features: FIB-4 + HSI, BMXWAIST, NFS
+Logistic regression, standardised inputs

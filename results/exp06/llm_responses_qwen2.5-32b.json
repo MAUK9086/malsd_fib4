@@ -1,0 +1,88 @@
+[
+  {
+    "cluster_id": 0,
+    "model_name": "qwen2.5-32b",
+    "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+    "prompt_type": "PHENOTYPE",
+    "n_patients": 91,
+    "raw_response": "{\n  \"phenotype_name\": \"Metabolic Silent Fibroser\",\n  \"description\": \"The cluster exhibits a median BMI of 46.2 kg/m\u00b2, indicating severe obesity. Liver stiffness measurement (LSM) is elevated at \u2265 8.0 kPa, suggesting significant fibrosis despite normal ALT and AST levels. The FIB-4 score, which relies on ALT, age, and platelet count, may underestimate fibrosis risk due to the normal transaminase levels.\",\n  \"primary_confounder\": \"ALT\",\n  \"confidence\": \"high\"\n}",
+    "parsed": {
+      "phenotype_name": "Metabolic Silent Fibroser",
+      "description": "The cluster exhibits a median BMI of 46.2 kg/m\u00b2, indicating severe obesity. Liver stiffness measurement (LSM) is elevated at \u2265 8.0 kPa, suggesting significant fibrosis despite normal ALT and AST levels. The FIB-4 score, which relies on ALT, age, and platelet count, may underestimate fibrosis risk due to the normal transaminase levels.",
+      "primary_confounder": "ALT",
+      "confidence": "high"
+    },
+    "status": "success"
+  },
+  {
+    "cluster_id": 0,
+    "model_name": "qwen2.5-32b",
+    "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+    "prompt_type": "MECHANISM",
+    "n_patients": 91,
+    "raw_response": "{\n  \"formula_explanation\": \"The FIB-4 formula resulted in a value below 1.30 due to the relatively high platelet count of 286.0 \u00d7 10\u00b3/\u03bcL and the square root of ALT (approximately 4.36), which together in the denominator significantly reduced the overall FIB-4 score despite the patient's age of 54.0 years and AST level of 18.0 U/L in the numerator indicating potential fibrosis.\", \n  \"missing_variable_explanation\": \"The GGT level of 24.0 U/L, which is not included in the FIB-4 formula, would have helped detect the fibrosis, as elevated GGT levels are often associated with liver fibrosis and could have provided additional evidence of liver damage.\",\n  \"key_misleading_variable\": \"Platelet count\"\n}",
+    "parsed": {
+      "formula_explanation": "The FIB-4 formula resulted in a value below 1.30 due to the relatively high platelet count of 286.0 \u00d7 10\u00b3/\u03bcL and the square root of ALT (approximately 4.36), which together in the denominator significantly reduced the overall FIB-4 score despite the patient's age of 54.0 years and AST level of 18.0 U/L in the numerator indicating potential fibrosis.",
+      "missing_variable_explanation": "The GGT level of 24.0 U/L, which is not included in the FIB-4 formula, would have helped detect the fibrosis, as elevated GGT levels are often associated with liver fibrosis and could have provided additional evidence of liver damage.",
+      "key_misleading_variable": "Platelet count"
+    },
+    "status": "success"
+  },
+  {
+    "cluster_id": 0,
+    "model_name": "qwen2.5-32b",
+    "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+    "prompt_type": "APASL_RELEVANCE",
+    "n_patients": 91,
+    "raw_response": "{\n  \"asian_relevance_statement\": \"The BMI of 46.2 kg/m\u00b2 exceeds the Asian obesity threshold, indicating a higher concern for obesity in this population. The waist circumference of 132.4 cm surpasses the Asian-specific abdominal obesity threshold, highlighting significant central adiposity.\",\n  \"asian_bmi_concern\": true,\n  \"central_adiposity_concern\": true\n}",
+    "parsed": {
+      "asian_relevance_statement": "The BMI of 46.2 kg/m\u00b2 exceeds the Asian obesity threshold, indicating a higher concern for obesity in this population. The waist circumference of 132.4 cm surpasses the Asian-specific abdominal obesity threshold, highlighting significant central adiposity.",
+      "asian_bmi_concern": true,
+      "central_adiposity_concern": true
+    },
+    "status": "success"
+  },
+  {
+    "cluster_id": 1,
+    "model_name": "qwen2.5-32b",
+    "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+    "prompt_type": "PHENOTYPE",
+    "n_patients": 129,
+    "raw_response": "{\n  \"phenotype_name\": \"Metabolic Silent Fibroser\",\n  \"description\": \"The median BMI of 35.0 kg/m\u00b2 and waist circumference of 115.7 cm indicate obesity, which is a significant metabolic abnormality. The median HbA1c of 6.1% suggests prediabetes, further supporting metabolic syndrome. Despite these metabolic abnormalities, liver enzyme levels (ALT and AST) are within normal ranges, which may contribute to the FIB-4 score underestimating fibrosis risk.\",\n  \"primary_confounder\": \"ALT\",\n  \"confidence\": \"medium\"\n}",
+    "parsed": {
+      "phenotype_name": "Metabolic Silent Fibroser",
+      "description": "The median BMI of 35.0 kg/m\u00b2 and waist circumference of 115.7 cm indicate obesity, which is a significant metabolic abnormality. The median HbA1c of 6.1% suggests prediabetes, further supporting metabolic syndrome. Despite these metabolic abnormalities, liver enzyme levels (ALT and AST) are within normal ranges, which may contribute to the FIB-4 score underestimating fibrosis risk.",
+      "primary_confounder": "ALT",
+      "confidence": "medium"
+    },
+    "status": "success"
+  },
+  {
+    "cluster_id": 1,
+    "model_name": "qwen2.5-32b",
+    "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+    "prompt_type": "MECHANISM",
+    "n_patients": 129,
+    "raw_response": "{\n  \"formula_explanation\": \"The FIB-4 formula resulted in a value below 1.30 due to the relatively high platelet count of 244.0 \u00d7 10\u00b3/\u03bcL and the square root of ALT (approximately 5.29), which together in the denominator significantly reduced the overall FIB-4 score despite the patient's age of 54.0 years and AST level of 21.0 U/L in the numerator indicating potential fibrosis.\", \n  \"missing_variable_explanation\": \"The GGT level of 32.0 U/L, which is not included in the FIB-4 formula, would have helped detect the fibrosis, as elevated GGT levels are often associated with liver fibrosis and can provide additional evidence of liver damage.\",\n  \"key_misleading_variable\": \"Platelet count\"\n}",
+    "parsed": {
+      "formula_explanation": "The FIB-4 formula resulted in a value below 1.30 due to the relatively high platelet count of 244.0 \u00d7 10\u00b3/\u03bcL and the square root of ALT (approximately 5.29), which together in the denominator significantly reduced the overall FIB-4 score despite the patient's age of 54.0 years and AST level of 21.0 U/L in the numerator indicating potential fibrosis.",
+      "missing_variable_explanation": "The GGT level of 32.0 U/L, which is not included in the FIB-4 formula, would have helped detect the fibrosis, as elevated GGT levels are often associated with liver fibrosis and can provide additional evidence of liver damage.",
+      "key_misleading_variable": "Platelet count"
+    },
+    "status": "success"
+  },
+  {
+    "cluster_id": 1,
+    "model_name": "qwen2.5-32b",
+    "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+    "prompt_type": "APASL_RELEVANCE",
+    "n_patients": 129,
+    "raw_response": "{\n  \"asian_relevance_statement\": \"The BMI of 35.0 kg/m\u00b2 exceeds the Asian obesity threshold of \u226523 kg/m\u00b2, indicating higher obesity risk. The waist circumference of 115.7 cm surpasses the Asian-specific abdominal obesity threshold for men, highlighting significant central adiposity.\",\n  \"asian_bmi_concern\": true,\n  \"central_adiposity_concern\": true\n}",
+    "parsed": {
+      "asian_relevance_statement": "The BMI of 35.0 kg/m\u00b2 exceeds the Asian obesity threshold of \u226523 kg/m\u00b2, indicating higher obesity risk. The waist circumference of 115.7 cm surpasses the Asian-specific abdominal obesity threshold for men, highlighting significant central adiposity.",
+      "asian_bmi_concern": true,
+      "central_adiposity_concern": true
+    },
+    "status": "success"
+  }
+]

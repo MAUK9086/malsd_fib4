@@ -16,7 +16,7 @@ from sklearn.metrics import (
 )
 from sklearn.preprocessing import StandardScaler
 from umap import UMAP
-import hdbscan
+from sklearn.cluster import HDBSCAN as hdbscan
 
 from src.utils.plot_utils import plot_umap_clusters, plot_radar_charts
 from src.utils.nhanes_codebook import MODEL_FEATURES
@@ -44,7 +44,7 @@ def gap_statistic(X: np.ndarray, k_range: list[int], n_refs: int = 20, random_st
             ref_km.fit(ref)
             ref_wks.append(ref_km.inertia_)
 
-        gap = np.mean(np.log(ref_wks + 1e-10)) - np.log(wk + 1e-10)
+        gap = np.mean(np.log(np.array(ref_wks) + 1e-10)) - np.log(wk + 1e-10)
         gaps.append({"k": k, "gap": gap, "wk": wk})
     return pd.DataFrame(gaps)
 
@@ -157,7 +157,7 @@ def run_exp05(config: dict | None = None) -> pd.DataFrame:
     # HDBSCAN sweep
     hdbscan_results = []
     for min_size in cfg_cl["hdbscan_min_cluster_sizes"]:
-        hdb = hdbscan.HDBSCAN(min_cluster_size=min_size)
+        hdb = hdbscan(min_cluster_size=min_size)
         lbls = hdb.fit_predict(X_scaled)
         n_clusters = len(set(lbls)) - (1 if -1 in lbls else 0)
         noise_pct = (lbls == -1).mean() * 100
@@ -186,7 +186,7 @@ def run_exp05(config: dict | None = None) -> pd.DataFrame:
     # Also compute HDBSCAN with best min_cluster_size
     best_hdb_row = hdbscan_df.loc[hdbscan_df["silhouette"].idxmax()]
     best_min_size = int(best_hdb_row["min_cluster_size"])
-    hdb_final = hdbscan.HDBSCAN(min_cluster_size=best_min_size)
+    hdb_final = hdbscan(min_cluster_size=best_min_size)
     fn_df["cluster_hdbscan"] = hdb_final.fit_predict(X_scaled)
 
     # Save cluster assignments

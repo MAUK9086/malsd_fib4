@@ -1,0 +1,2 @@
+comparison,n_asian,n_asian_fn,asian_fn_rate_pct,n_other,n_other_fn,other_fn_rate_pct,odds_ratio,ci_lo,ci_hi,p_value
+Asian vs Non-Asian,199,25,12.562814070351758,1191,195,16.3727959697733,0.7338638373121131,0.4696058019106519,1.146825975467184,0.20757410198318876

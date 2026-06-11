@@ -154,6 +154,5 @@ def add_all_scores(df: pd.DataFrame, config: dict) -> pd.DataFrame:
         "false_negative", "false_positive", "true_negative", "true_positive",
         "indeterminate_low", "indeterminate_high",
     ]
-    df["MISCLASS_LABEL"] = np.select(conditions, labels, default="unknown")
-
+    df["MISCLASS_LABEL"] = np.select([pd.Series(c).fillna(False).to_numpy(dtype=bool) for c in conditions], labels, default="unknown")
     return df

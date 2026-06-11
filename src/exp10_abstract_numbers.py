@@ -228,7 +228,7 @@ def run_exp10(config: dict | None = None) -> None:
     )
 
     out_abstract = results_dir / "abstract_draft.txt"
-    out_abstract.write_text(abstract)
+    out_abstract.write_text(abstract, encoding="utf-8")
     print(f"\nAbstract draft saved to {out_abstract}")
     print("\n" + "=" * 60)
     print(abstract)

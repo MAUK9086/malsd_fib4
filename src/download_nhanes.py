@@ -18,7 +18,7 @@ def load_config(path: str = "config/config.yaml") -> dict:
 def download_file(url: str, dest: Path, timeout: int = 60) -> bool:
     """Download a single file with progress bar. Returns True on success."""
     try:
-        resp = requests.get(url, stream=True, timeout=timeout)
+        resp = requests.get(url, stream=True, timeout=timeout, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
         if resp.status_code != 200:
             return False
         total = int(resp.headers.get("content-length", 0))

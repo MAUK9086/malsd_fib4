@@ -1,0 +1,4 @@
+model,cluster_id,prompt_type,concordance,hallucinated_vars,flag
+qwen2.5-32b,0,PHENOTYPE,0.2,[],high_hallucination_risk
+qwen2.5-32b,0,MECHANISM,0.0,[],high_hallucination_risk
+qwen2.5-32b,1,MECHANISM,0.0,[],high_hallucination_risk

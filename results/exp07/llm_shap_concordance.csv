@@ -1,0 +1,7 @@
+model,cluster_id,prompt_type,concordance,shap_top5,mentioned_vars
+qwen2.5-32b,0,PHENOTYPE,0.2,"['HSI', 'BMXWAIST', 'NFS', 'LBXGH', 'BMXBMI']","['age', 'alt', 'ast', 'bmi', 'fibrosis', 'platelets']"
+qwen2.5-32b,0,MECHANISM,0.0,"['HSI', 'BMXWAIST', 'NFS', 'LBXGH', 'BMXBMI']","['age', 'alt', 'ast', 'fibrosis', 'ggt', 'platelets']"
+qwen2.5-32b,0,APASL_RELEVANCE,0.4,"['HSI', 'BMXWAIST', 'NFS', 'LBXGH', 'BMXBMI']","['bmi', 'waist']"
+qwen2.5-32b,1,PHENOTYPE,0.6,"['HSI', 'BMXWAIST', 'NFS', 'LBXGH', 'BMXBMI']","['alt', 'ast', 'bmi', 'fibrosis', 'hba1c', 'waist']"
+qwen2.5-32b,1,MECHANISM,0.0,"['HSI', 'BMXWAIST', 'NFS', 'LBXGH', 'BMXBMI']","['age', 'alt', 'ast', 'fibrosis', 'ggt', 'platelets']"
+qwen2.5-32b,1,APASL_RELEVANCE,0.4,"['HSI', 'BMXWAIST', 'NFS', 'LBXGH', 'BMXBMI']","['bmi', 'waist']"

@@ -1,0 +1,3 @@
+model,auroc,ci_lo,ci_hi,delong_z,delong_p
+FIB-4,0.5,0.5,0.5,,
+FIB-4 Plus (HSI+Waist circumference+NFS),0.8391608391608391,0.7688190128261406,0.9051311623785442,9.798122058369671,0.0

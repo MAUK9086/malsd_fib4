@@ -1,0 +1,74 @@
+[
+  {
+    "experiment": "EXP-06",
+    "system_prompt": "You are a clinical hepatologist assistant performing structured data analysis.\nYour task is STRICTLY LIMITED to interpreting the numerical data provided.\nYou MUST NOT reference any patient history, clinical notes, or information\nnot explicitly provided in this prompt.\nYou MUST NOT invent symptoms, diagnoses, medications, or clinical context.\nIf a value is not provided, you MUST NOT assume or infer it.",
+    "user_prompt": "You are analysing a cluster of patients where FIB-4 incorrectly classified\nthem as \"low risk\" for liver fibrosis, but their liver stiffness measurement\n(LSM) was elevated (\u2265 8 kPa), indicating significant fibrosis.\nBelow are the MEDIAN laboratory and clinical values for this patient cluster.\nOnly these values exist. Do not assume anything else about these patients.\n\nCLUSTER PROFILE:\n- N patients in cluster: 91\n- Median Age: 54.0 years\n- Sex: N/A% female\n- Median BMI: 46.2 kg/m\u00b2\n- Median Waist circumference: 132.4 cm\n- Median ALT: 19.0 U/L  [Reference: Male 7\u201356 U/L, Female 7\u201345 U/L]\n- Median AST: 18.0 U/L  [Reference: 10\u201340 U/L]\n- Median GGT: 24.0 U/L  [Reference: Male 8\u201361 U/L, Female 5\u201336 U/L]\n- Median Platelet count: 286.0 \u00d7 10\u00b3/\u03bcL  [Reference: 150\u2013400]\n- Median HbA1c: 6.2%  [Reference: <5.7% normal, 5.7\u20136.4% prediabetes, \u22656.5% diabetes]\n- Median Triglycerides: 116.0 mg/dL  [Reference: <150 normal]\n- Median HDL cholesterol: 48.0 mg/dL  [Reference: Male >40, Female >50]\n- Median Albumin: 3.8 g/dL  [Reference: 3.5\u20135.0]\n- Median Haemoglobin: 13.4 g/dL  [Reference: Male 13.5\u201317.5, Female 12.0\u201315.5]\n- Computed FIB-4 score: N/A [Classified as: LOW RISK < 1.30]\n- Median Liver Stiffness (LSM): N/A kPa [ELEVATED \u2265 8.0 kPa = significant fibrosis]\n- % with Diabetes diagnosis: N/A%\n- Race/ethnicity distribution: Not available\n\nTASK:\nBased ONLY on the values above:\n1. Propose a SHORT clinical phenotype name (3\u20135 words, e.g., \"Metabolic Silent Fibroser\")\n2. Write EXACTLY 3 sentences explaining which specific values deviate from normal,\n   and why these deviations might cause FIB-4 to UNDERESTIMATE fibrosis risk.\n   Reference ONLY values that are actually abnormal in the profile above.\n3. State which ONE variable in this profile most likely confounds FIB-4.\n\nRESPONSE FORMAT (strict JSON, no other text):\n{\n  \"phenotype_name\": \"...\",\n  \"description\": \"sentence1. sentence2. sentence3.\",\n  \"primary_confounder\": \"variable_name\",\n  \"confidence\": \"high|medium|low\"\n}",
+    "metadata": {
+      "cluster_id": 0,
+      "model_name": "qwen2.5-32b",
+      "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+      "prompt_type": "PHENOTYPE",
+      "n_patients": 91
+    }
+  },
+  {
+    "experiment": "EXP-06",
+    "system_prompt": "You are a clinical hepatology expert. You are explaining why a mathematical\nformula failed. Answer only with information derivable from the data provided.\nDo not use generic statements. Every claim must reference a specific number\nfrom the cluster profile below.",
+    "user_prompt": "FIB-4 formula: FIB-4 = (Age \u00d7 AST) / (Platelet count \u00d7 \u221aALT)\n\nFor FIB-4 to classify a patient as LOW RISK (< 1.30), the denominator\n(Platelet count \u00d7 \u221aALT) must be relatively large compared to the numerator.\n\nCluster profile:\n- Computed FIB-4: N/A (LOW RISK threshold: < 1.30) \u2190 patient was INCORRECTLY classified\n- Actual LSM: N/A kPa (\u2265 8.0 = SIGNIFICANT FIBROSIS) \u2190 fibrosis IS present\n- Age: 54.0 years\n- AST: 18.0 U/L\n- ALT: 19.0 U/L\n- Platelet count: 286.0 \u00d7 10\u00b3/\u03bcL\n- GGT: 24.0 U/L (NOT in FIB-4 formula, but reference: Male 8\u201361, Female 5\u201336 U/L)\n- HbA1c: 6.2% (NOT in FIB-4 formula, reference: <5.7% normal)\n- BMI: 46.2 kg/m\u00b2\n\nTASK:\nIn EXACTLY 2 sentences, explain mathematically why this cluster's specific\nvalues caused FIB-4 to fall below 1.30 despite actual fibrosis being present.\nName the specific variable or ratio that is most responsible.\nThen in 1 sentence, state what variable (not in FIB-4) would have helped detect\nthe fibrosis in this patient, and why, using only values from the profile.\n\nRESPONSE FORMAT (strict JSON):\n{\n  \"formula_explanation\": \"sentence1. sentence2.\",\n  \"missing_variable_explanation\": \"sentence3.\",\n  \"key_misleading_variable\": \"variable_name\"\n}",
+    "metadata": {
+      "cluster_id": 0,
+      "model_name": "qwen2.5-32b",
+      "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+      "prompt_type": "MECHANISM",
+      "n_patients": 91
+    }
+  },
+  {
+    "experiment": "EXP-06",
+    "system_prompt": "You are reviewing a liver disease patient cluster for its relevance to\nAsia-Pacific populations. Use ONLY the data provided. Do not reference\nspecific country names unless the data supports it.",
+    "user_prompt": "Cluster demographic and metabolic profile:\n- Race: Not available\n- BMI: 46.2 kg/m\u00b2 (Asian obesity threshold: \u226523 kg/m\u00b2 vs \u226525 kg/m\u00b2 standard)\n- HbA1c: 6.2%\n- Waist circumference: 132.4 cm (Asian-specific abdominal obesity: \u226590 cm men, \u226580 cm women)\n- Triglycerides: 116.0 mg/dL\n- LSM: N/A kPa (significant fibrosis \u2265 8.0)\n- FIB-4: N/A (incorrectly classified as low risk)\n\nTASK:\nIn EXACTLY 2 sentences, describe whether the anthropometric values in this\ncluster are consistent with phenotypes commonly described in Asian populations\nwith MASLD (lower BMI, normal-weight metabolic syndrome, central adiposity).\nReference ONLY the numerical values provided.\n\nRESPONSE FORMAT (strict JSON):\n{\n  \"asian_relevance_statement\": \"sentence1. sentence2.\",\n  \"asian_bmi_concern\": true,\n  \"central_adiposity_concern\": true\n}",
+    "metadata": {
+      "cluster_id": 0,
+      "model_name": "qwen2.5-32b",
+      "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+      "prompt_type": "APASL_RELEVANCE",
+      "n_patients": 91
+    }
+  },
+  {
+    "experiment": "EXP-06",
+    "system_prompt": "You are a clinical hepatologist assistant performing structured data analysis.\nYour task is STRICTLY LIMITED to interpreting the numerical data provided.\nYou MUST NOT reference any patient history, clinical notes, or information\nnot explicitly provided in this prompt.\nYou MUST NOT invent symptoms, diagnoses, medications, or clinical context.\nIf a value is not provided, you MUST NOT assume or infer it.",
+    "user_prompt": "You are analysing a cluster of patients where FIB-4 incorrectly classified\nthem as \"low risk\" for liver fibrosis, but their liver stiffness measurement\n(LSM) was elevated (\u2265 8 kPa), indicating significant fibrosis.\nBelow are the MEDIAN laboratory and clinical values for this patient cluster.\nOnly these values exist. Do not assume anything else about these patients.\n\nCLUSTER PROFILE:\n- N patients in cluster: 129\n- Median Age: 54.0 years\n- Sex: N/A% female\n- Median BMI: 35.0 kg/m\u00b2\n- Median Waist circumference: 115.7 cm\n- Median ALT: 28.0 U/L  [Reference: Male 7\u201356 U/L, Female 7\u201345 U/L]\n- Median AST: 21.0 U/L  [Reference: 10\u201340 U/L]\n- Median GGT: 32.0 U/L  [Reference: Male 8\u201361 U/L, Female 5\u201336 U/L]\n- Median Platelet count: 244.0 \u00d7 10\u00b3/\u03bcL  [Reference: 150\u2013400]\n- Median HbA1c: 6.1%  [Reference: <5.7% normal, 5.7\u20136.4% prediabetes, \u22656.5% diabetes]\n- Median Triglycerides: 116.0 mg/dL  [Reference: <150 normal]\n- Median HDL cholesterol: 41.0 mg/dL  [Reference: Male >40, Female >50]\n- Median Albumin: 4.1 g/dL  [Reference: 3.5\u20135.0]\n- Median Haemoglobin: 15.1 g/dL  [Reference: Male 13.5\u201317.5, Female 12.0\u201315.5]\n- Computed FIB-4 score: N/A [Classified as: LOW RISK < 1.30]\n- Median Liver Stiffness (LSM): N/A kPa [ELEVATED \u2265 8.0 kPa = significant fibrosis]\n- % with Diabetes diagnosis: N/A%\n- Race/ethnicity distribution: Not available\n\nTASK:\nBased ONLY on the values above:\n1. Propose a SHORT clinical phenotype name (3\u20135 words, e.g., \"Metabolic Silent Fibroser\")\n2. Write EXACTLY 3 sentences explaining which specific values deviate from normal,\n   and why these deviations might cause FIB-4 to UNDERESTIMATE fibrosis risk.\n   Reference ONLY values that are actually abnormal in the profile above.\n3. State which ONE variable in this profile most likely confounds FIB-4.\n\nRESPONSE FORMAT (strict JSON, no other text):\n{\n  \"phenotype_name\": \"...\",\n  \"description\": \"sentence1. sentence2. sentence3.\",\n  \"primary_confounder\": \"variable_name\",\n  \"confidence\": \"high|medium|low\"\n}",
+    "metadata": {
+      "cluster_id": 1,
+      "model_name": "qwen2.5-32b",
+      "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+      "prompt_type": "PHENOTYPE",
+      "n_patients": 129
+    }
+  },
+  {
+    "experiment": "EXP-06",
+    "system_prompt": "You are a clinical hepatology expert. You are explaining why a mathematical\nformula failed. Answer only with information derivable from the data provided.\nDo not use generic statements. Every claim must reference a specific number\nfrom the cluster profile below.",
+    "user_prompt": "FIB-4 formula: FIB-4 = (Age \u00d7 AST) / (Platelet count \u00d7 \u221aALT)\n\nFor FIB-4 to classify a patient as LOW RISK (< 1.30), the denominator\n(Platelet count \u00d7 \u221aALT) must be relatively large compared to the numerator.\n\nCluster profile:\n- Computed FIB-4: N/A (LOW RISK threshold: < 1.30) \u2190 patient was INCORRECTLY classified\n- Actual LSM: N/A kPa (\u2265 8.0 = SIGNIFICANT FIBROSIS) \u2190 fibrosis IS present\n- Age: 54.0 years\n- AST: 21.0 U/L\n- ALT: 28.0 U/L\n- Platelet count: 244.0 \u00d7 10\u00b3/\u03bcL\n- GGT: 32.0 U/L (NOT in FIB-4 formula, but reference: Male 8\u201361, Female 5\u201336 U/L)\n- HbA1c: 6.1% (NOT in FIB-4 formula, reference: <5.7% normal)\n- BMI: 35.0 kg/m\u00b2\n\nTASK:\nIn EXACTLY 2 sentences, explain mathematically why this cluster's specific\nvalues caused FIB-4 to fall below 1.30 despite actual fibrosis being present.\nName the specific variable or ratio that is most responsible.\nThen in 1 sentence, state what variable (not in FIB-4) would have helped detect\nthe fibrosis in this patient, and why, using only values from the profile.\n\nRESPONSE FORMAT (strict JSON):\n{\n  \"formula_explanation\": \"sentence1. sentence2.\",\n  \"missing_variable_explanation\": \"sentence3.\",\n  \"key_misleading_variable\": \"variable_name\"\n}",
+    "metadata": {
+      "cluster_id": 1,
+      "model_name": "qwen2.5-32b",
+      "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+      "prompt_type": "MECHANISM",
+      "n_patients": 129
+    }
+  },
+  {
+    "experiment": "EXP-06",
+    "system_prompt": "You are reviewing a liver disease patient cluster for its relevance to\nAsia-Pacific populations. Use ONLY the data provided. Do not reference\nspecific country names unless the data supports it.",
+    "user_prompt": "Cluster demographic and metabolic profile:\n- Race: Not available\n- BMI: 35.0 kg/m\u00b2 (Asian obesity threshold: \u226523 kg/m\u00b2 vs \u226525 kg/m\u00b2 standard)\n- HbA1c: 6.1%\n- Waist circumference: 115.7 cm (Asian-specific abdominal obesity: \u226590 cm men, \u226580 cm women)\n- Triglycerides: 116.0 mg/dL\n- LSM: N/A kPa (significant fibrosis \u2265 8.0)\n- FIB-4: N/A (incorrectly classified as low risk)\n\nTASK:\nIn EXACTLY 2 sentences, describe whether the anthropometric values in this\ncluster are consistent with phenotypes commonly described in Asian populations\nwith MASLD (lower BMI, normal-weight metabolic syndrome, central adiposity).\nReference ONLY the numerical values provided.\n\nRESPONSE FORMAT (strict JSON):\n{\n  \"asian_relevance_statement\": \"sentence1. sentence2.\",\n  \"asian_bmi_concern\": true,\n  \"central_adiposity_concern\": true\n}",
+    "metadata": {
+      "cluster_id": 1,
+      "model_name": "qwen2.5-32b",
+      "model_path": "models/qwen2.5-32b-instruct-q4_k_m.gguf",
+      "prompt_type": "APASL_RELEVANCE",
+      "n_patients": 129
+    }
+  }
+]

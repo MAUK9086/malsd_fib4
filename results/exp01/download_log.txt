@@ -1,0 +1,16 @@
+NHANES Download Log
+========================================
+OK: P_LUX → data\raw\P_LUX.XPT
+OK: P_BIOPRO → data\raw\P_BIOPRO.XPT
+OK: P_CBC → data\raw\P_CBC.XPT
+OK: P_GHB → data\raw\P_GHB.XPT
+OK: P_DEMO → data\raw\P_DEMO.XPT
+OK: P_BMX → data\raw\P_BMX.XPT
+OK: P_DIQ → data\raw\P_DIQ.XPT
+OK: P_ALQ → data\raw\P_ALQ.XPT
+OK: P_HEQ → data\raw\P_HEQ.XPT
+OK: P_TRIGLY → data\raw\P_TRIGLY.XPT
+OK: P_HDL → data\raw\P_HDL.XPT
+OK: P_TCHOL → data\raw\P_TCHOL.XPT
+OK: P_BPX → data\raw\P_BPX.XPT
+OK: P_SMQ → data\raw\P_SMQ.XPT

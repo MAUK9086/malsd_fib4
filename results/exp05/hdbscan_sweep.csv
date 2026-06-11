@@ -1,0 +1,5 @@
+min_cluster_size,n_clusters,noise_pct,silhouette
+5,0,100.0,0
+10,0,100.0,0
+15,0,100.0,0
+20,0,100.0,0

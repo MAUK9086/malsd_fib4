@@ -1,0 +1,7 @@
+race_code,race_label,n_low_risk,n_false_negative,weighted_fn_rate_pct
+3,Non-Hispanic White,442,75,17.983338309600178
+2,Other Hispanic,153,26,17.892027330824124
+4,Non-Hispanic Black,306,52,16.001059473565938
+7,Other/Multi-Racial,70,13,15.552245548856728
+1,Mexican American,220,29,12.626018410023457
+6,Non-Hispanic Asian,199,25,11.444773331214817
