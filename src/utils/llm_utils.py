@@ -129,7 +129,7 @@ def load_llm(model_path: str, n_gpu_layers: int, n_ctx: int, seed: int, n_thread
         n_gpu_layers=n_gpu_layers,
         n_ctx=n_ctx,
         n_threads=n_threads,
-        verbose=False,
+        verbose=True,   # verbose=False crashes on Windows (stdout suppression null-deref)
         seed=seed,
     )
     print("Model loaded.")
