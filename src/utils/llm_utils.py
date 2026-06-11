@@ -116,6 +116,7 @@ def load_llm(model_path: str, n_gpu_layers: int, n_ctx: int, seed: int, n_thread
             "llama-cpp-python not installed. Run setup.sh first."
         ) from e
 
+    model_path = str(Path(model_path))  # ensure OS-native separators (backslash on Windows)
     if not Path(model_path).exists():
         raise FileNotFoundError(
             f"Model not found: {model_path}\n"

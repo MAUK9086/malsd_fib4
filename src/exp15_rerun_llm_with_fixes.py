@@ -68,18 +68,21 @@ def run_exp15(config: dict | None = None) -> None:
         out_path = results_dir / f"llm_responses_{model_name}_v2.json"
         print(f"Running {model_name}...")
         try:
-            model_path = (
+            model_path = Path(
                 config["models"]["primary_path"]
                 if model_name == config["models"]["primary_name"]
                 else config["models"]["secondary_path"]
             )
+            if not model_path.exists():
+                print(f"  Model file not found: {model_path} — skipping")
+                continue
             n_gpu = (
                 config["models"]["n_gpu_layers_32b"]
                 if model_name == config["models"]["primary_name"]
                 else config["models"]["n_gpu_layers_70b"]
             )
             llm = load_llm(
-                model_path=model_path,
+                model_path=str(model_path),  # str(Path(...)) gives OS-native separators
                 n_gpu_layers=n_gpu,
                 n_ctx=config["models"]["n_ctx"],
                 seed=config["models"]["seed"],
