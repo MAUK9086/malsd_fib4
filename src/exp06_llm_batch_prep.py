@@ -135,7 +135,8 @@ def prepare_batch(
         )
 
     batch = []
-    prompt_types = list(PROMPT_REGISTRY.keys())
+    # DIFFERENTIATION is a cross-cluster prompt — skip it in the per-cluster loop
+    per_cluster_types = [pt for pt in PROMPT_REGISTRY.keys() if pt != "DIFFERENTIATION"]
 
     for cluster_id in cluster_ids:
         profile_row = profiles[profiles["cluster"] == cluster_id].iloc[0]
@@ -146,7 +147,7 @@ def prepare_batch(
             print(f"  WARNING: cluster {cluster_id} missing FIB-4 ({ctx['fib4']}) or LSM ({ctx['lsm']})")
 
         for model_info in models_config:
-            for prompt_type in prompt_types:
+            for prompt_type in per_cluster_types:
                 fill_fn = PROMPT_REGISTRY[prompt_type]
                 system_prompt, user_prompt = fill_fn(ctx)
 
@@ -164,6 +165,44 @@ def prepare_batch(
                         "lsm_check": ctx["lsm"],
                     },
                 })
+
+    # DIFFERENTIATION: one prompt per model covering all clusters simultaneously
+    if "DIFFERENTIATION" in PROMPT_REGISTRY and len(cluster_ids) > 1:
+        # Build a simple comparison table from profiles
+        key_cols = ["fib4", "lsm", "bmi", "hba1c", "ggt", "waist"]
+        table_lines = ["Cluster | N | " + " | ".join(k.upper() for k in key_cols)]
+        table_lines.append("-" * 60)
+        for cluster_id in cluster_ids:
+            profile_row = profiles[profiles["cluster"] == cluster_id].iloc[0]
+            ctx = build_cluster_context(profile_row, fn_full, cluster_id)
+            row = f"  {cluster_id}   | {ctx['n_patients']} | " + " | ".join(ctx.get(k, "N/A") for k in key_cols)
+            table_lines.append(row)
+
+        diff_ctx = {
+            "n_clusters": len(cluster_ids),
+            "cluster_table": "\n".join(table_lines),
+        }
+        fill_fn = PROMPT_REGISTRY["DIFFERENTIATION"]
+        for model_info in models_config:
+            system_prompt, user_prompt = fill_fn(diff_ctx)
+            batch.append({
+                "experiment": experiment_label,
+                "system_prompt": system_prompt,
+                "user_prompt": user_prompt,
+                "metadata": {
+                    "cluster_id": -1,  # -1 = all clusters
+                    "model_name": model_info["name"],
+                    "model_path": model_info["path"],
+                    "prompt_type": "DIFFERENTIATION",
+                    "n_patients": sum(
+                        build_cluster_context(
+                            profiles[profiles["cluster"] == c].iloc[0], fn_full, c
+                        )["n_patients"] for c in cluster_ids
+                    ),
+                    "fib4_check": "all",
+                    "lsm_check": "all",
+                },
+            })
 
     batch_path = results_dir_out / "llm_batch.json"
     with open(batch_path, "w") as f:
