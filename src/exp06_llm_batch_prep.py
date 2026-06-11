@@ -209,7 +209,7 @@ def prepare_batch(
         json.dump(batch, f, indent=2)
 
     print(f"\nBatch prepared: {len(batch)} prompts → {batch_path}")
-    print(f"  Clusters: {len(cluster_ids)}, Models: {len(models_config)}, Prompt types: {len(prompt_types)}")
+    print(f"  Clusters: {len(cluster_ids)}, Models: {len(models_config)}, Prompt types: {len(PROMPT_REGISTRY)}")
     return str(batch_path)
 
 
