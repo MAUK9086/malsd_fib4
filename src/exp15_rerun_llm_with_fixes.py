@@ -16,7 +16,7 @@ from src.exp07_concordance import (
     compute_concordance,
     load_shap_top5_per_cluster,
 )
-from src.utils.llm_utils import run_llm_batch, validate_llm_response
+from src.utils.llm_utils import load_llm, run_llm_batch, validate_llm_response
 
 
 def load_config(path: str = "config/config.yaml") -> dict:
@@ -68,17 +68,32 @@ def run_exp15(config: dict | None = None) -> None:
         out_path = results_dir / f"llm_responses_{model_name}_v2.json"
         print(f"Running {model_name}...")
         try:
-            responses = run_llm_batch(
-                batch_path=batch_path,
-                model_name=model_name,
-                model_path=config["models"]["primary_path"] if model_name == config["models"]["primary_name"]
-                           else config["models"]["secondary_path"],
-                config=config,
-                filter_model_name=model_name,
+            model_path = (
+                config["models"]["primary_path"]
+                if model_name == config["models"]["primary_name"]
+                else config["models"]["secondary_path"]
             )
-            with open(out_path, "w") as f:
-                json.dump(responses, f, indent=2)
-            print(f"  Saved {len(responses)} responses → {out_path}")
+            n_gpu = (
+                config["models"]["n_gpu_layers_32b"]
+                if model_name == config["models"]["primary_name"]
+                else config["models"]["n_gpu_layers_70b"]
+            )
+            llm = load_llm(
+                model_path=model_path,
+                n_gpu_layers=n_gpu,
+                n_ctx=config["models"]["n_ctx"],
+                seed=config["models"]["seed"],
+                n_threads=config["models"]["n_threads"],
+            )
+            run_llm_batch(
+                batch_file=batch_path,
+                output_file=str(out_path),
+                model=llm,
+                temperature=config["models"]["temperature"],
+                max_tokens=config["models"]["max_tokens"],
+                seed=config["models"]["seed"],
+            )
+            print(f"  Saved responses → {out_path}")
         except Exception as e:
             print(f"  LLM inference failed for {model_name}: {e}")
             continue
