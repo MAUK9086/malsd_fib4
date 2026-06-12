@@ -1,0 +1,3 @@
+cluster_id,model,phenotype_name,concordance
+0,qwen2.5-32b,Metabolic Silent Fibroser,0.8
+1,qwen2.5-32b,Metabolic Silent Fibroser,0.4

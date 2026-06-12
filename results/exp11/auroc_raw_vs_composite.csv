@@ -1,0 +1,2 @@
+model,auroc,ci_lo,ci_hi,note
+XGBoost (raw features only),0.7654428904428905,0.6804657373448262,0.8397450714435177,EXP-11 — no composite scores

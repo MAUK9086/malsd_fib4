@@ -1,0 +1,8 @@
+model,cluster_id,prompt_type,concordance,shap_top5
+qwen2.5-32b,0,PHENOTYPE,0.8,"['HSI', 'BMXWAIST', 'BMXBMI', 'NFS', 'LBXGH']"
+qwen2.5-32b,0,MECHANISM,0.4,"['HSI', 'BMXWAIST', 'BMXBMI', 'NFS', 'LBXGH']"
+qwen2.5-32b,0,APASL_RELEVANCE,0.8,"['HSI', 'BMXWAIST', 'BMXBMI', 'NFS', 'LBXGH']"
+qwen2.5-32b,1,PHENOTYPE,0.4,"['HSI', 'BMXWAIST', 'BMXBMI', 'NFS', 'LBXGH']"
+qwen2.5-32b,1,MECHANISM,0.4,"['HSI', 'BMXWAIST', 'BMXBMI', 'NFS', 'LBXGH']"
+qwen2.5-32b,1,APASL_RELEVANCE,0.8,"['HSI', 'BMXWAIST', 'BMXBMI', 'NFS', 'LBXGH']"
+qwen2.5-32b,-1,DIFFERENTIATION,,[]

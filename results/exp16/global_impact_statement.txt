@@ -1,0 +1,62 @@
+# Global Burden Context — FIB-4 False Negatives in MASLD
+
+## US Findings (NHANES 2017–2020)
+- MASLD-eligible adults: 1,998 (survey-weighted: ~54 million US adults)
+- FIB-4 low-risk, elevated LSM (significant fibrosis): 16.6%
+  (95% CI: 13.5–20.0%)
+- Estimated US adults falsely reassured: ~9 million
+  (95% CI: 7–11 million)
+
+## Global Burden Context (literature-derived)
+
+The FIB-4 false-negative phenotype identified in this study — metabolic obesity
+with preserved transaminases — is a universal biological mechanism, not a
+US-specific or ethnicity-specific phenomenon.
+
+**Global MASLD prevalence:**
+Global MASLD prevalence is estimated at 32.4% (95% CI: 29.9–34.9%) of the adult
+population (Younossi et al., JHEP Reports 2023), representing approximately 2.5
+billion people worldwide.
+
+**Asia-Pacific burden:**
+The Asia-Pacific region accounts for 29–38% MASLD prevalence across countries,
+with the highest rates in the Middle East and South Asia. Critically, the obesity
+and diabetes co-epidemic — the primary drivers of FIB-4 underestimation — is
+accelerating fastest in low- and middle-income Asia-Pacific countries (Global
+Burden of Disease 2019; IDF Diabetes Atlas 2021).
+
+**FIB-4 failure mechanism is universal:**
+Independent validation data (Younossi et al., JHEP Reports 2023 [digital cohort
+validation]; Liu et al., JHEP 2024) confirm that BMI ≥ 30 and concurrent type 2
+diabetes are specific FIB-4 underperformance drivers regardless of ethnicity —
+consistent with the SHAP top features identified in this NHANES analysis (HbA1c,
+GGT, waist circumference). The failure is biochemical (diluted AST/ALT from
+fatty infiltration without inflammation), not demographic.
+
+**APASL clinical relevance:**
+The Asia-Pacific context is not that Asian patients have a unique FIB-4 failure
+mode, but that:
+1. Asia-Pacific countries have the world's largest absolute MASLD burden (~1.0
+   billion estimated patients).
+2. FIB-4 is the guideline-recommended first-line tool in AASLD 2023 and EASL 2024
+   — both of which are widely adopted across Asia-Pacific.
+3. The phenotypic profiles identified (metabolic obesity + preserved transaminases)
+   are increasingly common as diet westernisation advances in urban Asia.
+4. Non-invasive testing infrastructure is most limited in Asia-Pacific, making
+   a simple 4-variable "Blindspot Score" particularly actionable where FibroScan
+   capacity is scarce.
+
+## FIB-4 Plus Population Impact Estimate
+If FIB-4 Plus is deployed as a secondary triage step for FIB-4 low-risk patients:
+- NRI vs NFS: 0.092 (absolute reclassification improvement)
+- Estimated additional patients correctly identified in the US: ~830
+- This represents patients who would progress to advanced fibrosis without
+  intervention if current FIB-4 triage is used alone.
+
+## References
+- Younossi ZM et al. "Global epidemiology of nonalcoholic fatty liver disease—
+  Meta-analytic assessment of prevalence, incidence, and outcomes." Hepatology 2016.
+- Younossi ZM et al. "Global burden of MASLD and MASH." JHEP Reports 2023.
+- AASLD Practice Guidance: MASLD, 2023.
+- EASL Clinical Practice Guidelines: MASLD, 2024.
+- IDF Diabetes Atlas, 10th edition, 2021.

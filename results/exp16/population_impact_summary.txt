@@ -1,0 +1,13 @@
+US Population Impact (EXP-16)
+MASLD cohort (NHANES): N=1,998
+FN rate (FIB-4 low-risk, elevated LSM): 16.6% (95% CI: 13.5–20.0%)
+US adult false negatives: ~9.0 million (95% CI: 7.3–10.8 million)
+NRI vs NFS: 0.092
+Subgroups:
+  Male: 17.2% FN rate
+  Female: 14.2% FN rate
+  Age 18–45: 12.3% FN rate
+  Age 46–60: 18.6% FN rate
+  Age 61+: 17.5% FN rate
+  Diabetes: 29.8% FN rate
+  No diabetes: 11.8% FN rate

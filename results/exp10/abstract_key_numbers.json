@@ -1,22 +1,25 @@
 {
   "N1_masld_eligible": 1998,
   "N2_complete_fibroscan": 1998,
-  "R1_fn_rate_pct": 16.6,
-  "pop_extrapolation": "Population Extrapolation\n========================\nSurvey-weighted MASLD cohort represents: 38.9M US adults (FIB-4 low-risk)\nEstimated false negatives: 6.5M US adults\nFalse negative rate: 16.6% (95% CI: 13.5\u201320.0%)",
+  "R1_fn_rate_pct": "16.6",
+  "pop_est": "8.97",
+  "pop_ci_lo": "7.27",
+  "pop_ci_hi": "10.79",
   "N5_clusters": 2,
   "phenotype_names": [
+    "Metabolic Silent Fibroser",
     "Metabolic Silent Fibroser"
   ],
-  "C1_concordance_pct": 26.7,
-  "N5_validated": "-1",
-  "A1_fib4_auroc": 0.5,
-  "A1_plus_auroc": 0.839,
-  "delong_p": 0.0,
-  "E1_asian_fn_rate_pct": 11.4,
-  "asian_fold": 0.7,
+  "C1_concordance_pct": 60.0,
+  "N5_validated": "2",
+  "A1_plus_auroc": 0.837,
+  "A1_plus_ci": "0.773\u20130.898",
+  "delong_p": 0.0194,
+  "A1_nfs_auroc": 0.749,
+  "A1_bs_auroc": 0.691,
   "top_shap_features": [
-    "HSI",
-    "BMXWAIST",
-    "NFS"
+    "BMI",
+    "Waist",
+    "HbA1c"
   ]
 }

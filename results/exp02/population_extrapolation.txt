@@ -2,4 +2,4 @@ Population Extrapolation
 ========================
 Survey-weighted MASLD cohort represents: 38.9M US adults (FIB-4 low-risk)
 Estimated false negatives: 6.5M US adults
-False negative rate: 16.6% (95% CI: 13.5–20.0%)
+False negative rate: 16.6% (95% CI: 13.5â€“20.0%)

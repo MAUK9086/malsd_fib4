@@ -1,0 +1,3 @@
+model,auroc,ci_lo,ci_hi,note
+FIB-4 Blindspot Score (0–4),0.6905341880341881,0.6577420832229814,0.7264628622792092,BMI≥30 + HbA1c≥5.7 + waist≥threshold + GGT>threshold
+FIB-4 Plus (logistic regression),0.8366355866355867,0.7730152274868496,0.8984130998530535,EXP-09

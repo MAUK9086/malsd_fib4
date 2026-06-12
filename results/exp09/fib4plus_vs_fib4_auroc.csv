@@ -1,3 +1,5 @@
-model,auroc,ci_lo,ci_hi,delong_z,delong_p
-FIB-4,0.5,0.5,0.5,,
-FIB-4 Plus (HSI+Waist circumference+NFS),0.8391608391608391,0.7688190128261406,0.9051311623785442,9.798122058369671,0.0
+model,auroc,ci_lo,ci_hi,note,delong_z_vs_nfs,delong_p_vs_nfs
+NFS (low-risk stratum),0.7492229992229992,0.6563462129124633,0.8298766447368421,primary comparison — clinical next-step,,
+BMI only (low-risk stratum),0.792589355089355,0.71705706142936,0.8639194692608987,simple anthropometric baseline,,
+FIB-4 Plus (HSI+Waist circumference+BMI),0.8366355866355867,0.7730152274868496,0.8984130998530535,primary model,2.337490424447151,0.019413698258559986
+"FIB-4 (full MASLD cohort, reference only)",0.5765861493896767,0.5433272272980825,0.6073484096716549,"different denominator — all FIB-4 ranges, not comparable directly",,

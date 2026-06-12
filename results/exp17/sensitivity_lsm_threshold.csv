@@ -1,0 +1,4 @@
+n_low_risk,fn_rate_pct,auroc,sensitivity,lsm_thresh,fib4_low,cap_thresh,age_min,age_max
+1390,16.5,N/A,LSM≥7.9,7.9,1.3,274,18,120
+1390,4.5,N/A,LSM≥12.0,12.0,1.3,274,18,120
+1390,15.8,N/A,Primary,8.0,1.3,274,18,120
