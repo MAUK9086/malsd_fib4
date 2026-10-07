@@ -2,14 +2,14 @@
 
 **Decoding Who FIB-4 Fails: An LLM-Augmented Clinical Phenotyping Study Using NHANES 2017–2020**
 
-Target venue: **APASL STC 2026 Kumamoto** — September 18–19, 2026  
-Abstract deadline: **June 19, 2026**
+**Presented** as an oral presentation (FP5-2, Abstract No. 10340) at the **APASL Single Topic Conference 2026 Kumamoto**, Free Papers 5-1: MASLD/ALD 1, 19 September 2026. Recipient of the APASL STC 2026 Kumamoto International Travel Award.  
+Presented title: *FIB-4 False Negatives in MASLD: Clinical Phenotypes and an Augmented Triage Model*. The submitted abstract is in [`results/APASL_STC2026_abstract.md`](results/APASL_STC2026_abstract.md).
 
 ---
 
 ## Overview
 
-FIB-4 misclassifies ~10% of MASLD patients with significant fibrosis as "low risk". This study characterises the distinct clinical phenotypes of these false negatives using XGBoost + SHAP + unsupervised clustering on NHANES 2017–2020 data, then generates human-readable phenotype descriptions using locally-deployed LLMs (Qwen2.5-32B-Instruct), validated against SHAP via a novel concordance scoring methodology.
+Among MASLD patients classified as "low risk" by FIB-4 (< 1.30), 16.6% have significant (F2+) fibrosis on elastography. This study characterises the distinct clinical phenotypes of these false negatives using XGBoost + SHAP + unsupervised clustering on NHANES 2017–2020 data, then generates human-readable phenotype descriptions using locally-deployed LLMs (Qwen2.5-32B-Instruct), validated against SHAP via a novel concordance scoring methodology.
 
 ## Hardware Requirements
 
